@@ -79,8 +79,10 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
+	cudaMalloc((void**)&A_d, n * sizeof(float));
+	cudaMalloc((void**)&B_d, n * sizeof(float));
+	cudaMalloc((void**)&C_d, n * sizeof(float));
 	
-
 	cudaDeviceSynchronize();
 	stopTime(&timer);
 	printf("%f s\n", elapsedTime(timer));
@@ -90,7 +92,8 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	cudaMemcpy(A_d, A_h, n * sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy(B_d, B_h, n * sizeof(float), cudaMemcpyHostToDevice);
 
 	cudaDeviceSynchronize();
 	stopTime(&timer);
@@ -101,7 +104,11 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	int blockSize = 256; //Can be 256, 512, or 1024
+	int gridSize = (n + blockSize - 1) / blockSize;
+
+	vectorAdd<<<gridSize, blockSize>>>(A_d, B_d, C_d, n);
+
 
 	cuda_ret = cudaDeviceSynchronize();
 	if (cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
@@ -113,7 +120,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	cudaMemcpy(C_h, C_d, n * sizeof(float), cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 	stopTime(&timer);
@@ -130,7 +137,9 @@ int main(int argc, char **argv)
 	free(B_h);
 	free(C_h);
 	//INSERT CODE HERE
-	
+	cudaFree(A_d);
+	cudaFree(B_d);
+	cudaFree(C_d);
 
 	return 0;
 
