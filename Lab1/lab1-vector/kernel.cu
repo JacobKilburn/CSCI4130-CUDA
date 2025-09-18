@@ -31,4 +31,16 @@ __global__ void image2grayKernel(float *in, float *out, int height, int width)
 	// Use global index to determine which elements to read, add, and write ---
 	//INSERT KERNEL CODE HERE, BE CAREFUL FOR CORNER CASE!!!
 	
+	int x = blockIdx.x * blockDim.x + threadIdx.x; // column
+    int y = blockIdx.y * blockDim.y + threadIdx.y; // row
+
+    if (x < width && y < height) {
+        int i = y * width + x;
+        int rgb_idx = i * 3;
+
+        float r = in[rgb_idx];
+        float g = in[rgb_idx + 1];
+        float b = in[rgb_idx + 2];
+
+        out[i] = 0.114f * r + 0.587f * g + 0.299f * b;
 }

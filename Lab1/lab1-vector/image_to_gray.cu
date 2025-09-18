@@ -90,7 +90,10 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	float *in_d, *out_d;
+
+	cudaMalloc((void**)&in_d, in_data_bytes);
+	cudaMalloc((void**)&out_d, out_data_bytes);
 
 	cudaDeviceSynchronize();
 	stopTime(&timer);
@@ -101,7 +104,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	cudaMemcpy(in_d, in_h, in_data_bytes, cudaMemcpyHostToDevice);
 
 	cudaDeviceSynchronize();
 	stopTime(&timer);
@@ -112,7 +115,10 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	dim3 blockSize(16, 16);
+	dim3 gridSize((image_width + 15) / 16, (image_height + 15) / 16);
+
+	image2grayKernel<<<gridSize, blockSize>>>(in_d, out_d, image_height, image_width);
 
 	cuda_ret = cudaDeviceSynchronize();
 	if (cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
@@ -124,7 +130,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	startTime(&timer);
 	//INSERT CODE HERE
-	
+	cudaMemcpy(out_h, out_d, out_data_bytes, cudaMemcpyDeviceToHost);
 
 	cudaDeviceSynchronize();
 	stopTime(&timer);
@@ -139,7 +145,8 @@ int main(int argc, char **argv)
 	free(in_h);
 	free(out_h);
 	//INSERT CODE HERE
-	
+	cudaFree(in_d);
+	cudaFree(out_d);
 
 	return 0;
 
