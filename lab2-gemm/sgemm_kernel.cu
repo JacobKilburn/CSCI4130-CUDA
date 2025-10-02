@@ -22,7 +22,16 @@ __global__ void mysgemm(int m, int n, int k, const float *A, const float *B, flo
 
     // INSERT KERNEL CODE HERE
 
-    
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < m && col < n) {
+        float sum = 0.0f;
+        for (int i = 0; i < k; ++i) {
+            sum += A[row * k + i] * B[i * n + col];
+        }
+        C[row * n + col] = sum;
+    }
 
 }
 
@@ -54,12 +63,15 @@ void basicSgemm(char transa, char transb, int m, int n, int k, float alpha, cons
 
     // Initialize thread block and kernel grid dimensions ----------------------
     // INSERT CODE HERE
-    
+    int BLOCK_SIZE = 16;
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 dimGrid((n + BLOCK_SIZE - 1) / BLOCK_SIZE, (m + BLOCK_SIZE - 1) / BLOCK_SIZE);
+
 
     for (int i = 0; i < testRound; i++) {
         // Invoke CUDA kernel --------------------------------------------------
         // INSERT CODE HERE
-        
+        mysgemm<<<dimGrid, dimBlock>>>(m, n, k, A, B, C);
 
         
         cudaDeviceSynchronize();
