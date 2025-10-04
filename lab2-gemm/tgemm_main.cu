@@ -92,7 +92,10 @@ int main(int argc, char *argv[])
     startTime(&timer);
 
     // INSERT CODE HERE
-    
+    cudaMalloc((void**)&A_d, sizeof(float) * A_sz);
+    cudaMalloc((void**)&B_d, sizeof(float) * B_sz);
+    cudaMalloc((void**)&C_d, sizeof(float) * C_sz);
+
 
 
     cudaDeviceSynchronize();
@@ -106,7 +109,9 @@ int main(int argc, char *argv[])
     startTime(&timer);
 
     // INSERT CODE HERE
-    
+    cudaMemcpy(A_d, A_h, sizeof(float) * A_sz, cudaMemcpyHostToDevice);
+    cudaMemcpy(B_d, B_h, sizeof(float) * B_sz, cudaMemcpyHostToDevice);
+
 
 
     cudaDeviceSynchronize();
@@ -117,8 +122,7 @@ int main(int argc, char *argv[])
     printf("Launching kernel...");
     fflush(stdout);
     startTime(&timer);
-    basicSgemm('N', 'N', matArow, matBcol, matBrow, 1.0f,
-               A_d, matArow, B_d, matBrow, 0.0f, C_d, matBrow, testRound);
+    basicSgemm('N', 'N', matArow, matBcol, matBrow, 1.0f, A_d, matArow, B_d, matBrow, 0.0f, C_d, matBrow, testRound);
 
     cuda_ret = cudaDeviceSynchronize();
     if (cuda_ret != cudaSuccess)
@@ -133,7 +137,7 @@ int main(int argc, char *argv[])
     startTime(&timer);
 
     // INSERT CODE HERE
-    
+    cudaMemcpy(C_h, C_d, sizeof(float) * C_sz, cudaMemcpyDeviceToHost);
 
 
     cudaDeviceSynchronize();
@@ -154,8 +158,9 @@ int main(int argc, char *argv[])
     free(C_h);
 
     // INSERT CODE HERE
-
-
+    cudaFree(A_d);
+    cudaFree(B_d);
+    cudaFree(C_d);
 
     return 0;
 }
