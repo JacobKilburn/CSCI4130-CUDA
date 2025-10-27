@@ -94,7 +94,9 @@ int main(int argc, char *argv[])
 
     /* Copy mask to device constant memory */
     // INSERT CODE HERE
-    
+    cuda_ret = cudaMemcpyToSymbol(M_c, M_h.elements,
+        FILTER_SIZE * FILTER_SIZE * sizeof(float),
+        0, cudaMemcpyHostToDevice);
 
 
     if (cuda_ret != cudaSuccess)
@@ -110,14 +112,16 @@ int main(int argc, char *argv[])
     startTime(&timer);
 
     // INSERT CODE HERE
-
+    dim_block = dim3(TILE_SIZE, TILE_SIZE, 1);
+    dim_grid  = dim3((imageWidth + TILE_SIZE - 1) / TILE_SIZE,
+                    (imageHeight + TILE_SIZE - 1) / TILE_SIZE, 1);
 
 
     for (int i = 0; i < testRound; i++)
     {
         // INSERT CODE HERE
         // Call kernel function
-
+        convolution<<<dim_grid, dim_block>>>(N_d, P_d);
 
 
         cuda_ret = cudaDeviceSynchronize();
